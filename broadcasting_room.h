@@ -5,6 +5,7 @@
 #ifndef TRANSPORT_BROADCASTING_ROOM_H
 #define TRANSPORT_BROADCASTING_ROOM_H
 
+#include <ws2tcpip.h>
 #include <windows.h>
 
 void *

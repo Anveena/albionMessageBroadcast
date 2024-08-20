@@ -6,7 +6,6 @@
 #include "buffer.h"
 #include "client.h"
 #include <windows.h>
-#include <ws2tcpip.h>
 
 #define ERROR_MESSAGE_LENGTH 1024
 
