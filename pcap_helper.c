@@ -22,7 +22,7 @@ pcap_t *allocPcapHandler(const char *deviceKeywords, char *errBuffer) {
         pcap_freealldevs(allDevices);
         return NULL;
     }
-    pcap_t *handle = pcap_open_live(targetDevice->name, 65536, 1, 1000, errBuffer);
+    pcap_t *handle = pcap_open_live(targetDevice->name, 65536, 1, 1, errBuffer);
     if (handle == NULL) {
         pcap_freealldevs(allDevices);
         fprintf(stderr, "error opening device: %s\n", errBuffer);

@@ -25,41 +25,54 @@ void onSocketClientStatusChanged(const char *desc) {
     fprintf(stderr, "%s\n", desc);
 }
 
+typedef struct PCapHelper {
+    void *pMessagePacker;
+    void *pRoom;
+    char *buffer;
+    char *pcapErr;
+    unsigned int bufferSize;
+} P_CAP_HELPER;
+
+void packetHandler(u_char *user_data, const struct pcap_pkthdr *header, const u_char *packet) {
+    P_CAP_HELPER *helper = (P_CAP_HELPER *) user_data;
+    int rs = transformPcapPacketToBuffer(helper->pMessagePacker, packet, header->caplen, header->len,
+                                         &helper->buffer, &helper->bufferSize);
+    if (rs == 0) {
+        broadcastData(helper->pRoom, helper->buffer, helper->bufferSize);
+    } else {
+#ifdef PRINT_MY_LOG
+        if (rs > 0) {
+            fprintf(stdout, "%s\n", helper->pcapErr);
+        } else {
+            fprintf(stderr, "%s\n", helper->pcapErr);
+        }
+#endif
+    }
+}
+
 int main() {
+    P_CAP_HELPER *helper = malloc(sizeof(P_CAP_HELPER));
+    helper->buffer = NULL;
+    helper->bufferSize = 0;
+    char *error;
+    helper->pMessagePacker = allocMessagePacker(&error);
     char *socketError;
-    void *pRoom = initRoom(22550, 256, &socketError, &onSocketClientStatusChanged);
-    HANDLE tcpListenThread = CreateThread(NULL, 0, broadcastMainloop, pRoom, 0, NULL);
-    char *pcapErr = malloc(1024);
-    pcap_t *handle = allocPcapHandler("loopback", pcapErr);
+    helper->pRoom = initRoom(22550, 1024, &socketError, &onSocketClientStatusChanged);
+
+    HANDLE tcpListenThread = CreateThread(NULL, 0, broadcastMainloop, helper->pRoom, 0, NULL);
+
+    helper->pcapErr = malloc(1024);
+    pcap_t *handle = allocPcapHandler("loopback", helper->pcapErr);
     if (handle == NULL) {
+        free(helper);
         return -1;
     }
-    char *error;
-    void *pMessagePacker = allocMessagePacker(&error);
-    struct pcap_pkthdr *header;
-    const u_char *packet;
-    char *buffer;
-    unsigned int bufferSize = 0;
-    int rs = 0;
-    while (pcap_next_ex(handle, &header, &packet) >= 0) {
-        rs = transformPcapPacketToBuffer(pMessagePacker, packet, header->caplen, header->len,
-                                         &buffer, &bufferSize);
-        if (rs == 0) {
-            broadcastData(pRoom, buffer, bufferSize);
-        } else {
-#ifdef PRINT_MY_LOG
-            if (rs > 0) {
-                fprintf(stdout, "%s\n", error);
-            } else {
-                fprintf(stderr, "%s\n", error);
-            }
-#endif
-        }
-    }
+    pcap_loop(handle, 0, packetHandler, (u_char *) helper);
+
     WaitForSingleObject(tcpListenThread, INFINITE);
     CloseHandle(tcpListenThread);
-    free(pcapErr);
+    free(helper->pcapErr);
     freePcapHandler(&handle);
-    freeMessagePacker(&pMessagePacker);
+    freeMessagePacker(&helper->pMessagePacker);
     return 0;
 }
