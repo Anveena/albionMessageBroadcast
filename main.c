@@ -50,14 +50,30 @@ void packetHandler(u_char *user_data, const struct pcap_pkthdr *header, const u_
     }
 }
 
-int main() {
+int parsePort(int argc, char *argv[]) {
+    int port = 32999;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-port") == 0) {
+            if (i + 1 < argc) {
+                port = atoi(argv[i + 1]);
+                i++;
+            } else {
+                fprintf(stderr, "invalid port, use default port: %d", port);
+                break;
+            }
+        }
+    }
+    return port;
+}
+
+int main(int argc, char *argv[]) {
     P_CAP_HELPER *helper = malloc(sizeof(P_CAP_HELPER));
     helper->buffer = NULL;
     helper->bufferSize = 0;
     char *error;
     helper->pMessagePacker = allocMessagePacker(&error);
     char *socketError;
-    helper->pRoom = initRoom(22550, 1024, &socketError, &onSocketClientStatusChanged);
+    helper->pRoom = initRoom(parsePort(argc, argv), 1024, &socketError, &onSocketClientStatusChanged);
 
     HANDLE tcpListenThread = CreateThread(NULL, 0, broadcastMainloop, helper->pRoom, 0, NULL);
 
