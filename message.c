@@ -74,7 +74,7 @@ transformPcapPacketToBuffer(void *pMessagePacker, const u_char *packet, unsigned
                  udp_length);
         return -1;
     }
-    if (*(packet + padding) == 0x4 && *(packet + padding + 1) == 0x57) {
+    if (*(packet + padding) == 0x13 && *(packet + padding + 1) == 0xbf) {
         if (memcmp(packet + padding + 8, ((void *) packer->snd) + 4, udp_length - 8) == 0) {
             snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH, "duplicate messages");
             return 1;
@@ -85,7 +85,7 @@ transformPcapPacketToBuffer(void *pMessagePacker, const u_char *packet, unsigned
         *bufSize = packer->snd->dataLength + 4;
         return 0;
     }
-    if (*(packet + padding + 2) == 0x4 && *(packet + padding + 3) == 0x57) {
+    if (*(packet + padding + 2) == 0x13 && *(packet + padding + 3) == 0xbf) {
         if (memcmp(packet + padding + 8, ((void *) packer->rcv) + 4, udp_length - 8) == 0) {
             snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH, "duplicate messages");
             return 1;

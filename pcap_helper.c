@@ -29,7 +29,7 @@ pcap_t *allocPcapHandler(const char *deviceKeywords, char *errBuffer) {
         return NULL;
     }
     pcap_freealldevs(allDevices);
-    char filter_exp[] = "udp port 1111";
+    char filter_exp[] = "udp port 5055";
     struct bpf_program fp;
     if (pcap_compile(handle, &fp, filter_exp, 0, 0xffffffff) < 0) {
         pcap_freealldevs(allDevices);

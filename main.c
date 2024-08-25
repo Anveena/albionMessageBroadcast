@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     HANDLE tcpListenThread = CreateThread(NULL, 0, broadcastMainloop, helper->pRoom, 0, NULL);
 
     helper->pcapErr = malloc(1024);
-    pcap_t *handle = allocPcapHandler("loopback", helper->pcapErr);
+    pcap_t *handle = allocPcapHandler("Netease", helper->pcapErr);
     if (handle == NULL) {
         free(helper);
         return -1;
