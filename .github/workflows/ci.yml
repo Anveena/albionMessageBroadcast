@@ -17,7 +17,7 @@ jobs:
       - name: 创建一个标签
         id: create_tag
         run: |
-          $env:TAG_NAME="autogen$(Get-Date -Format "yyyy-MM-dd HH.mm.ss")"
+          $env:TAG_NAME="v$(Get-Date -Format "yyyy-MM-dd")-autogen"
           echo "TAG_NAME=$env:TAG_NAME" >> $env:GITHUB_ENV
           git tag $env:TAG_NAME
           git push origin $env:TAG_NAME
