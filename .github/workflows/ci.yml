@@ -7,6 +7,8 @@ on:
   pull_request:
     branches:
       - main
+  release:
+    types: [ created ]
 
 jobs:
   build:
@@ -20,13 +22,31 @@ jobs:
         uses: microsoft/setup-msbuild@v1
         with:
           vs-version: 'latest'
+
       - name: Install dependencies
         run: |
           choco install -y cmake
           choco install ninja --yes
+
       - name: Build with CMake
         run: |
           mkdir build
           cd build
           cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release
           cmake --build . --config Release
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: gh-actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: 'Automated release created by GitHub Actions.'
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/your_binary.exe
+          asset_name: your_binary.exe
+          asset_content_type: application/octet-stream
