@@ -27,9 +27,14 @@ add_executable(transport main.c
         args_parser.h
         macros.h
 )
+target_link_libraries(transport wpcap Packet iphlpapi ws2_32 ${CMAKE_THREAD_LIBS_INIT})
 add_executable(filterGetter
         args_parser.c
         args_parser.h
         filter_getter.c)
 target_link_libraries(filterGetter iphlpapi ws2_32)
-target_link_libraries(transport wpcap Packet iphlpapi ws2_32 ${CMAKE_THREAD_LIBS_INIT})
+add_executable(filterGetterForRemoteAddr
+        args_parser.c
+        args_parser.h
+        filter_getter_for_remote_addr.c
+)

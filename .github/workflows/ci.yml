@@ -17,7 +17,7 @@ jobs:
       - name: 创建一个标签
         id: create_tag
         run: |
-          $env:TAG_NAME="v$(Get-Date -Format "yyyy-MM-dd")-autogen"
+          $env:TAG_NAME="v$(Get-Date -Format "MM-dd")-$(git show -s --format='%H%n')-autogen"
           echo "TAG_NAME=$env:TAG_NAME" >> $env:GITHUB_ENV
           git tag $env:TAG_NAME
           git push origin $env:TAG_NAME
@@ -34,7 +34,7 @@ jobs:
           cmake --build . --config Release
       - name: 压缩
         run: |
-          zip --junk-paths albionMessageBroadcast build/filterGetter.exe build/transport.exe
+          zip --junk-paths albionMessageBroadcast build/filterGetter.exe build/transport.exe build/filterGetterForRemoteAddr.exe
       - name: 创建一个发布
         id: create_release
         uses: actions/create-release@v1

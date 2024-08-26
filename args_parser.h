@@ -11,4 +11,6 @@ int parseProcessName(int argc, char *argv[], int *pNameIndex);
 
 int parseAddresses(int argc, char *argv[], int *filterIndex);
 
+int parseNetworkingDeviceKeywords(int argc, char *argv[], int *keywordsIndex);
+
 #endif //TRANSPORT_ARGS_PARSER_H
