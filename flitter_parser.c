@@ -7,8 +7,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-void convertIntToIp(unsigned ip, char *output) {
-    sprintf(output, "%d.%d.%d.%d",
+void convertIntToIp(unsigned long ip, char *output) {
+    sprintf(output, "%lu.%lu.%lu.%lu",
             (ip & 0xFF),
             (ip >> 8) & 0xFF,
             (ip >> 16) & 0xFF,
@@ -27,7 +27,7 @@ int parseFilter(const char *input, char *strBuffer, unsigned int bufferSize) {
             goto err1;
         }
         *dotPos = '\0';
-        int ipInt = atoi(token);
+        unsigned long ipInt = atol(token);
         const char *port = dotPos + 1;
         char ipStr[16];
         convertIntToIp(ipInt, ipStr);
@@ -35,7 +35,7 @@ int parseFilter(const char *input, char *strBuffer, unsigned int bufferSize) {
             snprintf(strBuffer, bufferSize, "(src host %s and src port %s) or (dst host %s and dst port %s)", ipStr, port, ipStr, port);
         } else {
             char *tmpStr = strdup(strBuffer);
-            snprintf(strBuffer, bufferSize, "%s or (src host  %s and src port %s) or (dst host %s and dst port %s)", tmpStr, ipStr, port, ipStr, port);
+            snprintf(strBuffer, bufferSize, "%s or (src host %s and src port %s) or (dst host %s and dst port %s)", tmpStr, ipStr, port, ipStr, port);
             free(tmpStr);
         }
         first = 0;
