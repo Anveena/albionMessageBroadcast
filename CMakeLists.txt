@@ -20,5 +20,13 @@ add_executable(transport main.c
         client.c
         client.h
         buffer.c
-        buffer.h)
+        buffer.h
+        flitter_parser.c
+        flitter_parser.h
+        args_parser.c
+        args_parser.h
+)
+add_executable(filterGetter
+        filter_getter.c)
+target_link_libraries(filterGetter iphlpapi ws2_32)
 target_link_libraries(transport wpcap Packet ws2_32 ${CMAKE_THREAD_LIBS_INIT})
