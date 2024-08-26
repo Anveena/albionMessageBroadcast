@@ -74,27 +74,27 @@ int main(int argc, char *argv[]) {
     SetConsoleOutputCP(CP_UTF8);
     int pNameIndex;
     if (parseProcessName(argc, argv, &pNameIndex) != 0) {
-        fprintf(stderr, "参数不合理,应该是-pName 进程名\n");
+        fprintf(stderr, "filterGetter.exe无法正确启动,参数不合理,应该是-pName 进程名\n");
         return -1;
     }
 
     unsigned int bufferSize = 2048;
     char *strBuffer = malloc(bufferSize);
     if (strBuffer == NULL) {
-        fprintf(stderr, "内存都malloc失败了\n");
+        fprintf(stderr, "filterGetter.exe无法正确启动,内存都malloc失败了\n");
         return -1;
     }
 
     DWORD pid = getPidByName(argv[pNameIndex]);
     if (pid == 0) {
-        fprintf(stderr, "没有名为 %s 的进程\n", argv[pNameIndex]);
+        fprintf(stderr, "filterGetter.exe无法正确启动,没有名为 %s 的进程\n", argv[pNameIndex]);
         goto err1;
     }
     if (createFilterForPid(pid, argv[pNameIndex], strBuffer, bufferSize) != 0) {
-        fprintf(stderr, "%s\n", strBuffer);
+        fprintf(stderr, "filterGetter.exe无法正确启动,%s\n", strBuffer);
         goto err1;
     }
-    fprintf(stderr, "%s\n", strBuffer);
+    fprintf(stdout, "%s\n", strBuffer);
     free(strBuffer);
     return 0;
     err1:

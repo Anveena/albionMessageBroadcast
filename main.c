@@ -55,12 +55,12 @@ int main(int argc, char *argv[]) {
     }
     int filterIndex;
     if (parseAddresses(argc, argv, &filterIndex) != 0) {
-        fprintf(stderr, "过滤器(-pcapFilter)无法正确读取\n");
+        fprintf(stderr, "过滤器(-addresses)无法正确读取\n");
         return -1;
     }
     char *filter = malloc(DEFAULT_FILTER_BUFFER_SIZE);
     if (parseFilter(argv[filterIndex], filter, DEFAULT_FILTER_BUFFER_SIZE) != 0) {
-        fprintf(stderr, "过滤器(-pcapFilter)无法正确解析\n");
+        fprintf(stderr, "过滤器(-addresses)无法正确解析\n");
         free(filter);
         return -1;
     }
