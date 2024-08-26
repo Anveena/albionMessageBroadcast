@@ -70,7 +70,14 @@ int main(int argc, char *argv[]) {
         port = DEFAULT_LISTEN_PORT;
         fprintf(stderr, "未有效的指定端口(-port),使用默认端口: %d\n", port);
     }
-
+    int deviceKeywordsIdx;
+    const char *deviceKeywords;
+    if (parseNetworkingDeviceKeywords(argc, argv, &deviceKeywordsIdx) != 0) {
+        fprintf(stderr, "未指定有效的网卡设备关键字(-deviceKeywords),使用默认关键字: %s\n", DEFAULT_DEVICE_KEY_WORDS);
+        deviceKeywords = DEFAULT_DEVICE_KEY_WORDS;
+    } else {
+        deviceKeywords = argv[deviceKeywordsIdx];
+    }
     P_CAP_HELPER *helper = malloc(sizeof(P_CAP_HELPER));
     if (helper == NULL) {
         fprintf(stderr, "脑瘫Sonar:内存都malloc失败了\n");
@@ -86,7 +93,7 @@ int main(int argc, char *argv[]) {
         free(helper);
         return -1;
     }
-    if (getMacOfDevice(DEFAULT_DEVICE_KEY_WORDS, helper->mac, helper->packerErr) != 0) {
+    if (getMacOfDevice(deviceKeywords, helper->mac, helper->packerErr) != 0) {
         fprintf(stderr, "无法找到mac地址:%s\n", helper->packerErr);
         free(helper);
         return -1;
@@ -96,7 +103,7 @@ int main(int argc, char *argv[]) {
     char *socketError = malloc(ERROR_MESSAGE_LENGTH);
     helper->pRoom = mallocRoom(port, 1024, socketError, &onSocketClientStatusChanged);
 
-    pcap_t *handle = allocPcapHandler(DEFAULT_DEVICE_KEY_WORDS, filter, helper->pcapErr);
+    pcap_t *handle = allocPcapHandler(deviceKeywords, filter, helper->pcapErr);
     if (handle == NULL) {
         goto free;
     }
