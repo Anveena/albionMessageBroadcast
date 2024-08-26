@@ -13,29 +13,23 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      - name: 下载代码
         uses: actions/checkout@v4
-
-      - name: Set up CMake
-        uses: microsoft/setup-msbuild@v1
-        with:
-          vs-version: 'latest'
-
-      - name: Install dependencies
+      - name: 安装依赖
         run: |
           choco install -y cmake
           choco install ninja --yes
-
-      - name: Build with CMake
+          choco install zip --yes
+      - name: 编译
         run: |
           mkdir build
           cd build
           cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release
           cmake --build . --config Release
-      - name: Zip Executable Files
+      - name: 压缩
         run: |
-          zip --junk-paths my-artifact build/filterGetter.exe
-      - name: Create GitHub Release
+          zip --junk-paths my-artifact build/filterGetter.exe build/transport.exe
+      - name: 创建一个发布
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -46,7 +40,7 @@ jobs:
           body: '自动化生成'
           draft: false
           prerelease: false
-      - name: Upload Release Asset
+      - name: 上传制品
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
