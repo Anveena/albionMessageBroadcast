@@ -14,27 +14,24 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.1.3
 
       - name: Set up CMake
-        uses: cmake/setup-cmake@v3
+        uses: microsoft/setup-msbuild@v1
         with:
-          cmake-version: '3.29'
-
+          vs-version: 'latest'
       - name: Install vcpkg
         run: |
           Invoke-WebRequest -Uri https://github.com/microsoft/vcpkg/releases/download/2024.07.12/vcpkg-x64-windows.zip -OutFile vcpkg.zip
           Expand-Archive vcpkg.zip -DestinationPath vcpkg
           cd vcpkg
           .\bootstrap-vcpkg.bat
-
       - name: Install dependencies
         run: |
-          .\vcpkg\vcpkg install pcap
-
+          choco install -y cmake
       - name: Build with CMake
         run: |
           mkdir build
           cd build
-          cmake .. -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=..\vcpkg\scripts\buildsystems\vcpkg.cmake
+          cmake .. -G "Visual Studio 17 2022"
           cmake --build . --config Release
