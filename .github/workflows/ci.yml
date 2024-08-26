@@ -17,7 +17,8 @@ jobs:
       - name: 创建一个标签
         id: create_tag
         run: |
-          $env:TAG_NAME="v$(Get-Date -Format "MM-dd")-$(git show -s --format='%H%n')-autogen"
+          $env:TAG_NAME="v$(Get-Date -Format "MM-dd")-$(git rev-parse --short HEAD)-autogen"
+          $env:COMMIT_INFO="$(git show -s --format='%s')"
           echo "TAG_NAME=$env:TAG_NAME" >> $env:GITHUB_ENV
           git tag $env:TAG_NAME
           git push origin $env:TAG_NAME
@@ -43,7 +44,7 @@ jobs:
         with:
           tag_name: ${{ env.TAG_NAME }}
           release_name: Release ${{ env.TAG_NAME }}
-          body: '自动化生成'
+          body: ${{ env.COMMIT_INFO }}
           draft: false
           prerelease: false
       - name: 上传制品

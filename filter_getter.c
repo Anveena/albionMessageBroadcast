@@ -52,10 +52,17 @@ int createFilterForPid(DWORD pid, const char *pName, char *strBuffer, unsigned i
     boolean got = FALSE;
     for (int i = 0; i < (int) udpTable->dwNumEntries; i++) {
         if (udpTable->table[i].dwOwningPid == pid) {
-            snprintf(strBuffer, bufferSize, "%s-%lu.%hu",
-                     strBuffer,
+            char addrPort[64];
+            snprintf(addrPort, sizeof(addrPort), "%lu.%hu",
                      udpTable->table[i].dwLocalAddr,
                      ntohs((u_short) udpTable->table[i].dwLocalPort));
+            if (strstr(strBuffer, addrPort) == NULL) {
+                char *tmpStr = strdup(strBuffer);
+                snprintf(strBuffer, bufferSize, "%s-%s",
+                         tmpStr,
+                         addrPort);
+                free(tmpStr);
+            }
             got = TRUE;
         }
     }
