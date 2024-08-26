@@ -14,6 +14,13 @@ jobs:
     steps:
       - name: 下载代码
         uses: actions/checkout@v4
+      - name: 创建一个标签
+        id: create_tag
+        run: |
+          $env:TAG_NAME="autogen$(Get-Date -Format "yyyy-MM-dd HH.mm.ss")"
+          echo "TAG_NAME=$env:TAG_NAME" >> $env:GITHUB_ENV
+          git tag $env:TAG_NAME
+          git push origin $env:TAG_NAME
       - name: 安装依赖
         run: |
           choco install -y cmake
@@ -28,14 +35,6 @@ jobs:
       - name: 压缩
         run: |
           zip --junk-paths my-artifact build/filterGetter.exe build/transport.exe
-      - name: 创建一个标签
-        id: create_tag
-        run: |
-            TAG_NAME="auto$(date +'%Y%m%d%H%M%S')"
-            echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
-            git tag $TAG_NAME
-            git push origin $TAG_NAME
-
       - name: 创建一个发布
         id: create_release
         uses: actions/create-release@v1
