@@ -31,9 +31,9 @@ int parseProcessName(int argc, char *argv[], int *pNameIndex) {
     return -1;
 }
 
-int parsePCAPFilter(int argc, char *argv[], int *filterIndex) {
+int parseAddresses(int argc, char *argv[], int *filterIndex) {
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-pcapFilter") == 0) {
+        if (strcmp(argv[i], "-addresses") == 0) {
             if (i + 1 >= argc) {
                 return -1;
             }

@@ -53,6 +53,29 @@ void addClient(SOCKET clientSocket, MY_BUFFER *buffer, MY_CLIENT **pClients,
     newClient->thread = CreateThread(NULL, 0, mainLoop, newClient, 0, NULL);
 }
 
+void freeClients(MY_CLIENT **pClients) {
+    MY_CLIENT *current = *pClients;
+    MY_CLIENT *next = NULL;
+    while (current != NULL) {
+        next = current->next;
+        if (current->semaphore != NULL) {
+            CloseHandle(current->semaphore);
+        }
+        if (current->thread != NULL) {
+            CloseHandle(current->thread);
+        }
+        if (current->socket != INVALID_SOCKET) {
+            closesocket(current->socket);
+        }
+        if (current->localBuffer != NULL) {
+            free(current->localBuffer);
+        }
+        free(current);
+        current = next;
+    }
+    *pClients = NULL;
+}
+
 void broadcast(MY_CLIENT **clients) {
     MY_CLIENT *curr = *clients;
     MY_CLIENT *prev = NULL;
@@ -118,7 +141,7 @@ DWORD WINAPI mainLoop(LPVOID lpParam) {
         memcpy(toWrite, client->buffer->buffer, length);
         ReleaseSRWLockShared(&client->buffer->rwlock);
         if (bufferSN != client->sn) {
-            fprintf(stderr, "sn mismatch: %u vs %u", bufferSN, client->sn);
+            fprintf(stderr, "sn不匹配,可能接收端很慢: %u vs %u\n", bufferSN, client->sn);
             client->sn = bufferSN;
         }
         if (!writeAll(socket, toWrite, length)) {

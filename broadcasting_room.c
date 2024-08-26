@@ -5,9 +5,9 @@
 #include "broadcasting_room.h"
 #include "buffer.h"
 #include "client.h"
+#include "macros.h"
 #include <windows.h>
 
-#define ERROR_MESSAGE_LENGTH 1024
 
 typedef struct MyRoom {
     unsigned int sn;
@@ -20,17 +20,23 @@ typedef struct MyRoom {
 } MY_ROOM;
 
 void *
-initRoom(unsigned int listenAt, unsigned int bufferCount, char **errorStr,
-         void (*onClientStatusChangedCallback)(const char *)) {
+mallocRoom(unsigned int listenAt, unsigned int bufferCount, char *errorStr,
+           void (*onClientStatusChangedCallback)(const char *)) {
     MY_ROOM *room = malloc(sizeof(MY_ROOM));
-    room->errorStr = malloc(ERROR_MESSAGE_LENGTH);
+    room->errorStr = errorStr;
     room->buffer = allocMyBuffers(bufferCount);
     room->sn = 0;
     room->clients = NULL;
     room->listenAt = listenAt;
     room->onClientStatusChangedCallback = onClientStatusChangedCallback;
-    *errorStr = room->errorStr;
     return room;
+}
+
+void freeRoom(void *pRoom) {
+    MY_ROOM *room = pRoom;
+    freeMyBuffers(room->buffer);
+    freeClients(&room->clients);
+    free(pRoom);
 }
 
 void broadcastData(void *pRoom, const char *data, unsigned int dataLen) {

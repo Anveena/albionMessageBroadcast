@@ -24,6 +24,8 @@ typedef struct MyClient {
 void addClient(SOCKET clientSocket, MY_BUFFER *buffer, MY_CLIENT **pClients,
                void (*onClientStatusChangedCallback)(const char *));
 
+void freeClients(MY_CLIENT **pClients);
+
 void broadcast(MY_CLIENT **clients);
 
 #endif //TRANSPORT_CLIENT_H

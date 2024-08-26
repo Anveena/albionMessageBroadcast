@@ -9,8 +9,10 @@
 #include <windows.h>
 
 void *
-initRoom(unsigned int listenAt, unsigned int bufferCount, char **errorStr,
-         void (*onClientStatusChangedCallback)(const char *));
+mallocRoom(unsigned int listenAt, unsigned int bufferCount, char *errorStr,
+           void (*onClientStatusChangedCallback)(const char *));
+
+void freeRoom(void *pRoom);
 
 DWORD WINAPI broadcastMainloop(void *pRoom);
 

@@ -7,7 +7,9 @@
 
 #include <pcap.h>
 
-pcap_t *allocPcapHandler(const char *deviceKeywords, char *errBuffer);
+int getMacOfDevice(const char *deviceKeywords, unsigned char mac[6], char *errBuffer);
+
+pcap_t *allocPcapHandler(const char *deviceKeywords, const char *filter, char *errBuffer);
 
 void freePcapHandler(pcap_t **ppPcapHandler);
 

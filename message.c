@@ -3,8 +3,7 @@
 //
 
 #include "message.h"
-
-#define ERROR_MESSAGE_LENGTH 1024
+#include "macros.h"
 
 typedef struct MyMessage {
     uint16_t dataLength;
@@ -17,14 +16,13 @@ typedef struct MessagePacker {
     char *errorStr;
 } MESSAGE_PACKER;
 
-void *allocMessagePacker(char **errorStr) {
+void *mallocMessagePacker(char *errorStr) {
     MESSAGE_PACKER *rs = malloc(sizeof(MESSAGE_PACKER));
-    rs->errorStr = malloc(ERROR_MESSAGE_LENGTH);
+    rs->errorStr = errorStr;
     rs->rcv = malloc(65536 + 4);
     rs->snd = malloc(65536 + 4);
     rs->rcv->isSnd = 0xff;
     rs->snd->isSnd = 0;
-    *errorStr = rs->errorStr;
     return rs;
 }
 
@@ -36,34 +34,10 @@ void freeMessagePacker(void **ppMessagePacker) {
     *ppMessagePacker = NULL;
 }
 
-int
-transformPcapPacketToBuffer(void *pMessagePacker, const u_char *packet, unsigned int capLength, unsigned int length,
-                            char **buf, unsigned int *bufSize) {
+int transformPcapPacketToBuffer(void *pMessagePacker, boolean isRcv, const u_char *packet, unsigned int length,
+                                char **buf, unsigned int *bufSize) {
     MESSAGE_PACKER *packer = pMessagePacker;
-    if (packet == NULL) {
-        snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH, "null ptr for packet");
-        return -1;
-    }
-    if (capLength != length || length < 28 + IP_PACKET_PADDING) {
-        snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH,
-                 "invalid packet:\n\tpacketPtr:%p,length:%u,capLength:%u",
-                 packet,
-                 length,
-                 capLength);
-        return -1;
-    }
-    if ((*((const unsigned int *) packet)) != 2) {
-        snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH,
-                 "invalid packet:\n\tpacketPrefix4Byte:%u",
-                 (*((const unsigned int *) packet)));
-        return -1;
-    }
-    int padding = IP_PACKET_PADDING;
-    if (*(packet + padding + 9) != 0x11) {
-        snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH,
-                 "invalid protocol type:%d", *(packet + padding + 9));
-        return 1;
-    }
+    int padding = MAC_LENGTH + 2;
     padding += 4 * (*(packet + padding) & 0b1111);
     unsigned int udp_length = ((unsigned int) *(packet + padding + 4)) << 8 | ((unsigned int) *(packet + padding + 5));
     if (udp_length + padding != length || udp_length == 0) {
@@ -74,20 +48,9 @@ transformPcapPacketToBuffer(void *pMessagePacker, const u_char *packet, unsigned
                  udp_length);
         return -1;
     }
-    if (*(packet + padding) == 0x13 && *(packet + padding + 1) == 0xbf) {
-        if (memcmp(packet + padding + 8, ((void *) packer->snd) + 4, udp_length - 8) == 0) {
-            snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH, "duplicate messages");
-            return 1;
-        }
-        memcpy(((void *) packer->snd) + 4, packet + padding + 8, udp_length - 8);
-        packer->snd->dataLength = (udp_length - 8) & 0xffff;
-        *buf = (char *) packer->snd;
-        *bufSize = packer->snd->dataLength + 4;
-        return 0;
-    }
-    if (*(packet + padding + 2) == 0x13 && *(packet + padding + 3) == 0xbf) {
+    if (isRcv) {
         if (memcmp(packet + padding + 8, ((void *) packer->rcv) + 4, udp_length - 8) == 0) {
-            snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH, "duplicate messages");
+            snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH, "重复消息");
             return 1;
         }
         memcpy(((void *) packer->rcv) + 4, packet + padding + 8, udp_length - 8);
@@ -96,5 +59,13 @@ transformPcapPacketToBuffer(void *pMessagePacker, const u_char *packet, unsigned
         *bufSize = packer->rcv->dataLength + 4;
         return 0;
     }
-    return 1;
+    if (memcmp(packet + padding + 8, ((void *) packer->snd) + 4, udp_length - 8) == 0) {
+        snprintf(packer->errorStr, ERROR_MESSAGE_LENGTH, "重复消息");
+        return 1;
+    }
+    memcpy(((void *) packer->snd) + 4, packet + padding + 8, udp_length - 8);
+    packer->snd->dataLength = (udp_length - 8) & 0xffff;
+    *buf = (char *) packer->snd;
+    *bufSize = packer->snd->dataLength + 4;
+    return 0;
 }
