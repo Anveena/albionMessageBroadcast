@@ -34,7 +34,7 @@ jobs:
           cmake --build . --config Release
       - name: 压缩
         run: |
-          zip --junk-paths my-artifact build/filterGetter.exe build/transport.exe
+          zip --junk-paths albionMessageBroadcast build/filterGetter.exe build/transport.exe
       - name: 创建一个发布
         id: create_release
         uses: actions/create-release@v1
@@ -53,6 +53,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./my-artifact.zip
-          asset_name: my-artifact.zip
+          asset_path: ./albionMessageBroadcast.zip
+          asset_name: albionMessageBroadcast.zip
           asset_content_type: application/zip
